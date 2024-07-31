@@ -22,9 +22,12 @@ def btp(*args, now:bool=True) -> str:
     return result
 
 def bt_inp(prompt:str,options:dict[str:str]=None, prefix:str=None):
+    # Print option list if provided
     if not options == None:
         for idx,opt in options.items():
-            print(f'  -{idx}- {opt}')
+            # Create white space
+            space = (4-len(str(idx))) * " "
+            print(f'{space} [{idx}] {opt}')
         print('')
 
     if not prefix == None:
