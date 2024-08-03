@@ -6,7 +6,10 @@ from viz import btp,bt_inp
 from tabulate import tabulate
 
 import pandas as pd
+
+import argparse
 import sys
+import os
 
 LEGEND = {
     "?":"Show command legend",
@@ -33,7 +36,29 @@ RESET = "\033[0m"
 
 RE_ASCII = r"\[\d\dm\.+?\\033"
 # ------------------------------------------------- #
+def crt_tmpl_path() -> str:
+    """Gets the directory of function file and returns the template direction
 
+    Returns:
+        str: Path of CSV template
+    """
+    fname:str = os.path.abspath(__file__)
+    dirname:str = os.path.dirname(fname)
+
+    tmpl_path:str = os.path.join(dirname)
+
+    return tmpl_path
+
+def parse_cl_args():
+    # Initialize parser
+    parser = argparse.ArgumentParser(prog="To-Do")
+
+    # Set arguments
+    parser.add_argument(
+        "-i",
+        "--input",
+        help="CSV file with format for To-Do-Application. Comp. ./files/template.csv"
+    )
 class MyTasks:
     def __init__(self,data:pd.DataFrame):
         self.df = data
@@ -281,8 +306,7 @@ class MyTasks:
         return "s:all"
         
 def main():
-    # Set path to csv file
-    PATH = "/home/bertrandterrier/repositories/codeberg/utilities/todo/files/todo_list.csv"
+    # Get input path
 
     # Load DataFrame
     df = pd.read_csv(PATH)
