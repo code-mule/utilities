@@ -2,14 +2,18 @@
 
 # --------------------------------------------------------- #
 
+from conf import get_conf,check_first_time,set_conf
 from viz import btp,bt_inp
 from tabulate import tabulate
 
 import pandas as pd
-
+import os
 import argparse
 import sys
-import os
+import shutil
+
+DIR_PATH:str = os.path.dirname(os.path.abspath(__file__))
+CSV_TMPL_PATH:str = os.path.join(DIR_PATH,"files/template.csv")
 
 LEGEND = {
     "?":"Show command legend",
@@ -24,7 +28,8 @@ LEGEND = {
     "q!":"Force quit"
 }
 
-CHECK = ["–","q","q!","wq"]
+CHECK = ["x","q","q!","wq"]
+
 UNFIN = "\033[31m✗\033[0m"
 FIN = "\033[32m✔\033[0m"
 BLUE = "\033[34m"
@@ -33,22 +38,10 @@ RED = "\033[31m"
 YELLOW = "\033[33m"
 MAGENTA = "\033[35m"
 RESET = "\033[0m"
-
+BOLD = "\033[1m"
 RE_ASCII = r"\[\d\dm\.+?\\033"
+
 # ------------------------------------------------- #
-def crt_tmpl_path() -> str:
-    """Gets the directory of function file and returns the template direction
-
-    Returns:
-        str: Path of CSV template
-    """
-    fname:str = os.path.abspath(__file__)
-    dirname:str = os.path.dirname(fname)
-
-    tmpl_path:str = os.path.join(dirname)
-
-    return tmpl_path
-
 def parse_cl_args():
     # Initialize parser
     parser = argparse.ArgumentParser(prog="To-Do")
@@ -57,10 +50,32 @@ def parse_cl_args():
     parser.add_argument(
         "-i",
         "--input",
-        help="CSV file with format for To-Do-Application. Comp. ./files/template.csv"
+        help="CSV file with format for To-Do-Application. Comp. 'files/template.csv'"
     )
+    parser.add_argument(
+        "-c",
+        "--create",
+        help="Create new CSV style from To-Do template."
+    )
+    parser.add_argument(
+        "-s",
+        "--set",
+        help="Change settings. 'table:<tabulate-table-style> file:<my-default-file>'."
+    )
+
+    # Store arguments
+    args = parser.parse_args()
+
+    return args
+
 class MyTasks:
+
     def __init__(self,data:pd.DataFrame):
+        """Task object creating tabulate tables, allowing to add and delete tasks, save the new DataFrame, etc.
+
+        Args:
+            data (pd.DataFrame): DataFrame with CSV data.
+        """
         self.df = data
         self.cols = list(data.columns)
  
@@ -134,7 +149,7 @@ class MyTasks:
             case "a"|"all":
                 temp_table = self.table_all
             case _:
-                btp("ERROR","Unknown <table_type>.")
+                btp(f"  {RED}{BOLD}-›ERROR","Unknown <table_type>.{RESET}")
             
         temp_table = self._printable_table(temp_table)
         print(temp_table)
@@ -181,7 +196,7 @@ class MyTasks:
         # Add new row to dataframe
         self.df.loc[len(self.df)] = new_entry
         
-    
+        self.create_table() 
         return "s:open"
                      
     def save(self,path:str) -> str:
@@ -226,7 +241,7 @@ class MyTasks:
             for col in cols:
                 # Assure that column is existing
                 if not col in self.df.columns:
-                    btp("WARNING",f"{col} no valid category.")
+                    btp(f"{YELLOW}{BOLD}WARNING",f"{col} no valid category.{RESET}")
                     continue
 
                 for key in keywords:
@@ -307,9 +322,44 @@ class MyTasks:
         
 def main():
     # Get input path
+    args = parse_cl_args()
 
-    # Load DataFrame
-    df = pd.read_csv(PATH)
+   # Check if settings file is existing
+    check_first_time()
+
+    # Get settings from config file
+    def_file,tbl_style = get_conf()
+
+    # Get path
+    if not args.set == None:
+        # Reset configuration file
+        set_conf(args.set)
+        
+        # Get new settings
+        configs = get_conf()
+        print('  → Reset configuration file:')
+        for elem in configs:
+            print(f'    » {elem}')
+        
+        # End app
+        sys.exit(4)
+    elif not args.input == None:
+        path:str = args.input
+    elif not args.create == None:
+        path:str = os.path.expanduser(args.create)
+        shutil.copy2(CSV_TMPL_PATH,path)
+    elif def_file == None:
+        print(f"  {RED}{BOLD}-› ERROR.\n  → No input file provided.\n  → Aborting.{RESET}")
+        sys.exit(3)
+    elif not os.path.exists(def_file):
+        print(f"  {RED}{BOLD}-› FAILURE.\n  → File {def_file} not found.\n  → Aborting.{RESET}")
+        sys.exit(2)
+    else:
+        path:str = def_file
+
+
+    ## Load DataFrame
+    df = pd.read_csv(path)
 
     # Create category column
     df["type"] = df["type"].astype("category")
@@ -334,7 +384,7 @@ def main():
         # Check if app should be quit
         if opt.lower().startswith("w") or opt.lower().endswith("w"):
             # Save dataframe
-            todolist.df.to_csv(PATH, index=False)
+            todolist.df.to_csv(path, index=False)
 
             # Get writing command out of option storage
             opt = opt.lower().replace("w","")
@@ -369,11 +419,11 @@ def main():
                 opt = todolist.show_legend()
             case "q"|"quit"|"exit"|"!":
                 # Reload CSV as DataFrame
-                df = pd.read_csv(PATH)
+                df = pd.read_csv(path)
 
                 # Check if changes were saved
                 if not todolist.df.shape[0] == df.shape[0]:
-                    btp("WARNING","Changes were not saved.","Use [wq] for save+exit or [q!] to force an exit.")
+                    print(f"  {RED}{BOLD}-› WARNING","Changes were not saved.","Use [wq] for save+exit or [q!] to force an exit.{RESET}")
                     opt = bt_inp("[wq|q!|<option>]")
                     continue
                 else:
@@ -390,10 +440,10 @@ def main():
                 else:
                     opt = "?"
             case "wq":
-                todolist.df.to_csv(PATH, index=False)
+                todolist.df.to_csv(path, index=False)
                 exit_check = True
             case _:
-                btp("WARNING","Unrecognized input.")
+                print(f"  {YELLOW}{BOLD}-› WARNING","Unrecognized input.{RESET}")
                 opt = "?"
     return
 
