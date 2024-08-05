@@ -10,10 +10,22 @@ Small command line application for managing your tasks in a very easy way.
 
 ![Example GIF (Without colors)](assets/todo_example.gif)
 
+- [To-Do](#to-do)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
 - [Author](#author)
+
+## To-Do
+
+- [x] Creating new tasks
+- [x] Finishing tasks
+- [ ] Correct coloring
+- [ ] Deleting files (without finishing)
+- [ ] Fuzzy search
+- [ ] Sorting tasks
+- [ ] Showing tasks because of difficulty
+- [ ] Depending tasks(?)
 
 ## Installtion
 
