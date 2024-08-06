@@ -5,6 +5,7 @@
 from conf import get_conf,check_first_time,set_conf
 from viz import btp,bt_inp
 from tabulate import tabulate
+from search import search_tasks
 
 import pandas as pd
 import os
@@ -211,29 +212,6 @@ class MyTasks:
             f = cols[0]
             cols = cols[1:]
 
-            if len(cols) <= 1:
-                cols = cols
-        
-        else:
-            f = command
-            cols = ":"
-
-        if f == "fs":
-            return self.show_search_table()        
-        else:
-            return f,cols
-
-    def find(self,inp:str):
-        # Extract keyword, command
-        keywords = inp.split(" ")
-        command = keywords[0]
-        keywords = keywords[1:]
-
-        f,cols = self._extract_search_command(command=command)
-
-        print(f)
-        print(f"COLUMNS: {cols}")
-
         search_indeces_exact = []
         search_indeces_others = []
         # Searching DataFrame
@@ -349,16 +327,14 @@ def main():
         path:str = os.path.expanduser(args.create)
         shutil.copy2(CSV_TMPL_PATH,path)
     elif def_file == None:
-        print(f"  {RED}{BOLD}-› ERROR.\n  → No input file provided.\n  → Aborting.{RESET}")
+        print(f"  {RED}{BOLD}-> ERROR.\n  → No input file provided.\n  → Aborting.{RESET}")
         sys.exit(3)
     elif not os.path.exists(def_file):
-        print(f"  {RED}{BOLD}-› FAILURE.\n  → File {def_file} not found.\n  → Aborting.{RESET}")
+        print(f"  {RED}{BOLD}-> FAILURE.\n  → File {def_file} not found.\n  → Aborting.{RESET}")
         sys.exit(2)
     else:
         path:str = def_file
-
-
-    ## Load DataFrame
+    # Load DataFrame
     df = pd.read_csv(path)
 
     # Create category column
@@ -380,7 +356,6 @@ def main():
         if fail_save >= 555:
             exit_check = True
             continue
-
         # Check if app should be quit
         if opt.lower().startswith("w") or opt.lower().endswith("w"):
             # Save dataframe
@@ -403,10 +378,11 @@ def main():
             opt = todolist.fin_task(opt)
             todolist.create_table()
             continue
-
+        
         if opt.lower().startswith("+"):
             opt = todolist.create_task(opt)
             continue
+        
         # Match the option which menu to show
         match opt.lower():
             case "s"|"so"|"s:unfinished"|"s:open":
@@ -423,7 +399,7 @@ def main():
 
                 # Check if changes were saved
                 if not todolist.df.shape[0] == df.shape[0]:
-                    print(f"  {RED}{BOLD}-› WARNING","Changes were not saved.","Use [wq] for save+exit or [q!] to force an exit.{RESET}")
+                    print(f"  {RED}{BOLD}-> WARNING","Changes were not saved.",f"Use [wq] for save+exit or [q!] to force an exit.{RESET}")
                     opt = bt_inp("[wq|q!|<option>]")
                     continue
                 else:
@@ -443,8 +419,9 @@ def main():
                 todolist.df.to_csv(path, index=False)
                 exit_check = True
             case _:
-                print(f"  {YELLOW}{BOLD}-› WARNING","Unrecognized input.{RESET}")
+                print(f"  {YELLOW}{BOLD}-> WARNING","Unrecognized input.{RESET}")
                 opt = "?"
+
     return
 
 if __name__ == "__main__":
