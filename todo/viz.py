@@ -1,5 +1,19 @@
 # bertrandterrier@codeberg.org/utilities/todo/utils/viz.py
 
+def get_prefix(dlevel:int=0) -> str:
+    """Create a prefix for indent level in terminal.
+
+    Args:
+        dlevel (int, optional): Level of indentation. Defaults to 0.
+
+    Returns:
+        str: Prefix string for level of indentation.
+    """
+    # Create prefix
+    dpref:str = f"{dlevel*'o'}»"
+
+    return dpref
+
 def btp(*args, now:bool=True) -> str:
     """Visually differing printing style from normal command lines
 
