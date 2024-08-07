@@ -6,6 +6,13 @@ Small command line application for managing your tasks in a very easy way.
 
 (Still a couple of problems.)
 
+> No executable nor package yet. 
+> 
+> I use the program with a (z)shell script that starts a virtual environment and then executes the python script.
+>
+> You can find a template of the script in temp/todo_shell_script.sh.
+> Do not forget to put in your virtual environment; and make sure the dependencies (see requirements.txt) are installed. 
+
 ![Static Example B](assets/2024-08-04_23-05.png)
 
 ![Example GIF (Without colors)](assets/todo_example.gif)
