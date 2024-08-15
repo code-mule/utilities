@@ -1,0 +1,14 @@
+# FIRST LAUNCH
+[launch.conf]
+context = "Printing at first launch in the terminal. Contains license stuff and so on."
+file = ['conf']
+start = "> Hello, --USER--!"
+gpl_term = """
+sctranslit Copyright (C) 2024  BertrandTerrier
+This program comes with ABSOLUTELY NO WARRANTY; 
+    ::: for details type `show w'.
+
+This is free software, and you are welcome to 
+redistribute it under certain conditions; 
+    ::: type `show c' for details.
+"""

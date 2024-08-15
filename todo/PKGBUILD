@@ -1,0 +1,23 @@
+# Maintainer: Immanuel Stemmert (bertrandterrier) <i.stemmert@gmail.com>
+pkgname=totask
+pkgver=1.0.1
+pkgrel=1
+pkgdesc='Simple Python program to handle and visualize a clean tasklist in the Terminal.'
+arch=('any')
+url="http://codeberg.org/bertrandterrier/todo"
+license=("AGPL")
+depends=('python')
+makedepends=('python-pip')
+source=("todo/")
+md5sums=('SKIP')
+
+package() {
+    install -d "$plgdir/usr/lib/$pkgname"
+    cp -r "$srcdir/todo"/* "$pkgdir/usr/lib/$pkgname/"
+
+    #Create a sumlink to make it executable
+    ln -s "/usr/lib/$pkgname/__main__.py" "$pkgdir/usr/bin/myscript"
+
+    # Install Pyzthon dependencies
+    pip install --root="$pkgdir" --no-cache-dir -r "$srcdir/todo/requirements.txt"
+}

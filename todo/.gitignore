@@ -3,3 +3,7 @@ notes.md
 build
 dist
 Todo.egg-info
+pd
+argparse
+shutil
+sys

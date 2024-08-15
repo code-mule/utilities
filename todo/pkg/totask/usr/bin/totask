@@ -5,8 +5,7 @@
 from conf import get_conf,check_first_time,set_conf
 from viz import btp,bt_inp
 from tabulate import tabulate
-from search import search_tasks
-
+from path import search_correct_path
 import pandas as pd
 import os
 import argparse
@@ -322,10 +321,25 @@ def main():
         # End app
         sys.exit(4)
     elif not args.input == None:
-        path:str = args.input
+        path:str = args.input.strip()
+        print(f'"{args.input}"')
+        print(f'"{path}"')
     elif not args.create == None:
-        path:str = os.path.expanduser(args.create)
-        shutil.copy2(CSV_TMPL_PATH,path)
+        path:str = os.path.expanduser(args.create.strip())
+        dest:str = os.path.dirname(path)
+
+        btp('Copy CSV template to path',f'::{path}')
+        
+        if not os.path.exists(dest):
+            old_dest = dest
+            dest = search_correct_path(dest)
+        
+        if os.path.exists(dest):
+            path = path.replace(old_dest,dest)
+            shutil.copy2(CSV_TMPL_PATH,path)
+        else:
+            btp('WARNING',f':::Did not found PATH {path} or similar paths.',':::Aborting...')
+            sys.exit(3)
     elif def_file == None:
         print(f"  {RED}{BOLD}-> ERROR.\n  → No input file provided.\n  → Aborting.{RESET}")
         sys.exit(3)
@@ -358,16 +372,38 @@ def main():
             continue
         # Check if app should be quit
         if opt.lower().startswith("w") or opt.lower().endswith("w"):
-            # Save dataframe
-            todolist.df.to_csv(path, index=False)
+            if not "w:" in opt.lower():
+                # Save dataframe
+                todolist.df.to_csv(path, index=False)
 
-            # Get writing command out of option storage
-            opt = opt.lower().replace("w","")
+                # Get writing command out of option storage
+                opt = opt.lower().replace("w","")
 
-            # Check if option variable is now empty
-            if len(opt) <= 0:
-                opt = "s:open"
-                continue
+                # Check if option variable is now empty
+                if len(opt) <= 0:
+                    opt = "s:open"
+                    continue
+            else:
+                if opt.lower()=='w:table':
+                    fname = opt.replace('w:table','')
+                    if len(fname.strip()) <= 0:
+                        fname = bt_inp('<name>')
+                    
+                    while fname.startswith(' '):
+                        fname = fname[1:]
+                    while fname.endswith(' '):
+                        fname = fname[:-1]
+
+                    tbl_path:str = os.path.join(os.path.dirname(path),fname)
+                print('TESTTESTTEST')
+                print(todolist.table)
+                print(f"{todolist.table}")
+                with open(tbl_path,"w") as f:
+                    f.write(f'{todolist.table}')
+                with open(tbl_path+'_all','w') as f:
+                    f.write(todolist.table_all)
+                with open(tbl_path+'_fin','w') as f:
+                    f.write(todolist.table_fin)
         
         if opt.lower().startswith("f") or opt.lower().startswith("ff"):
             todolist.find(opt)

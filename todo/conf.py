@@ -110,3 +110,5 @@ def get_conf() -> tuple[str,str]:
     
     return (default_file,table_style)
 
+def first_launch(license:str,links:dict[str],test_launch:bool=False) -> None:
+    # Print launch print
